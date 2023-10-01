@@ -3,75 +3,12 @@
 <head>
     <title>CSV Data Visualization</title>
     <script src="https://d3js.org/d3.v6.min.js"></script>
+    <link rel="stylesheet" href="Style.css">
     <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .filter-dropdown {
-            width: 100%;
-        }
-        #searchInput {
-            margin-bottom: 10px;
-        }
-
-        .arc {
-      transition: fill 0.2s; /* Voeg een overgangseffect toe */
-    }
-
-    .arc:hover {
-      fill: lightgray; /* Kleur veranderen bij hover */
-      cursor: pointer; /* Muisaanwijzer veranderen naar pointer */
-    }
-
-    .categorieText{
-        text-align: center;
-   
-    }
-
-    .categorieParagraaf{
-        text-align:center;
-       
-    
-
-    }
-
-    .bar {
-      fill: steelblue; /* Stel de staafkleur in */
-      transition: fill 0.2s; /* Voeg een overgangseffect toe */
-    }
-
-    .bar:hover {
-      fill: lightsteelblue; /* Kleur veranderen bij hover */
-      cursor: pointer; /* Muisaanwijzer veranderen naar pointer */
-    }
-
-
-    /* CSS-stijlen voor de container */
-.chart-containerprojectstatus {
-    display: flex;
-    justify-content: flex-end; /* Plaats de inhoud aan de rechterkant */
-    align-items: center; /* Centreer verticaal */
-    height: 100vh; /* Volledige hoogte van het viewport */
-    padding: 20px;
-    margin-left: 80%; /* Voeg wat ruimte toe rondom de inhoud */
-}
-
-
-    
-    
+        
     </style>
 </head>
 <body>
-    
     <h1>CSV Data Visualization</h1>
     <input type="text" id="searchInput" placeholder="Zoek...">
     <button id="updateButton">Bijwerken en download automatisch het nieuwe csv bestand</button>
