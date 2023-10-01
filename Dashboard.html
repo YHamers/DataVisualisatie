@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSV Data Visualization</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .filter-dropdown {
+            width: 100%;
+        }
+        #searchInput {
+            margin-bottom: 10px;
+        }
+
+        .arc {
+      transition: fill 0.2s; /* Voeg een overgangseffect toe */
+    }
+
+    .arc:hover {
+      fill: lightgray; /* Kleur veranderen bij hover */
+      cursor: pointer; /* Muisaanwijzer veranderen naar pointer */
+    }
+
+    .categorieText{
+        text-align: center;
+   
+    }
+
+    .categorieParagraaf{
+        text-align:center;
+       
+    
+
+    }
+
+    .bar {
+      fill: steelblue; /* Stel de staafkleur in */
+      transition: fill 0.2s; /* Voeg een overgangseffect toe */
+    }
+
+    .bar:hover {
+      fill: lightsteelblue; /* Kleur veranderen bij hover */
+      cursor: pointer; /* Muisaanwijzer veranderen naar pointer */
+    }
+
+
+    /* CSS-stijlen voor de container */
+.chart-containerprojectstatus {
+    display: flex;
+    justify-content: flex-end; /* Plaats de inhoud aan de rechterkant */
+    align-items: center; /* Centreer verticaal */
+    height: 100vh; /* Volledige hoogte van het viewport */
+    padding: 20px;
+    margin-left: 80%; /* Voeg wat ruimte toe rondom de inhoud */
+}
+
+
+    
+    
+    </style>
+</head>
+<body>
+    
+    <h1>CSV Data Visualization</h1>
+    <input type="text" id="searchInput" placeholder="Zoek...">
+    <button id="updateButton">Bijwerken en download automatisch het nieuwe csv bestand</button>
+    <table>
+        <thead>
+            <tr>
+                <th>Project ID</th>
+                <th>Project Title</th>
+                <th>Client</th>
+                <th>Stakeholders</th>
+                <th>Category</th>
+                <th>Start Date</th>
+                <th>Lectoraat</th>
+                <th>Project Status</th>
+                <th>Tags</th>
+                <th>Contact info client</th>
+                <th>Contact info lectoraat</th>
+                <th>project goal</th>
+                <th>results</th>
+                <th>Start date</th>
+                <th>intake date</th>
+                <th>Review Date</th>
+                <th>End Date</th>
+                <th>Submit Date</th>
+                <th>Project Status</th>
+                <th>Project Duration</th>
+                <th>Dependencies</th>
+                <th>Acties</th> <!-- Kolom voor knoppen -->
+            </tr>
+        </thead>
+        <tbody id="data">
+            <!-- Voeg hier je tabelgegevens toe -->
+        </tbody>
+    </table>
+
+    <script>
+        // URL naar het CSV-bestand
+        var csvFile = 'dataset.csv';
+        var data = []; // Hier slaan we de gegevens op voor bewerking
+        var tableBody = document.getElementById('data'); // Verplaats de variabele hier
+        var rows; // Variabele om de rijen van het CSV-bestand op te slaan
+
+        // Haal het CSV-bestand op met behulp van de Fetch API
+        fetch(csvFile)
+            .then(response => response.text())
+            .then(csvText => {
+                // Split de CSV-data in rijen
+                rows = csvText.split('\n');
+
+                // Verwijder de koptekstrij (indien aanwezig)
+                var header = rows[0].split(';');
+                rows.shift();
+
+                // Loop door de rijen en maak tabelrijen
+                for (var i = 0; i < rows.length; i++) {
+                    var rowData = rows[i].split(';');
+                    if (rowData.length === header.length) { // Controleer of het aantal kolommen overeenkomt
+                        data.push(rowData); // Bewaar de rijgegevens voor bewerking
+                        var row = document.createElement('tr');
+
+                        for (var j = 0; j < header.length; j++) {
+                            var cell = document.createElement('td');
+                            cell.textContent = rowData[j];
+                            row.appendChild(cell);
+                        }
+
+                        // Voeg de actieknoppen toe aan de laatste kolom
+                        var actionCell = document.createElement('td');
+                        var deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Verwijderen';
+                        deleteButton.addEventListener('click', function() {
+                            var rowIndex = this.parentElement.parentElement.rowIndex - 1;
+                            if (rowIndex >= 0) {
+                                data.splice(rowIndex, 1); // Verwijder de rij uit de gegevens
+                                tableBody.deleteRow(rowIndex); // Verwijder de rij uit de tabel
+                                updateCSVFile(); // Werk het CSV-bestand bij na verwijdering
+                            }
+                        });
+
+                        actionCell.appendChild(deleteButton);
+                        row.appendChild(actionCell);
+
+                        tableBody.appendChild(row);
+                    }
+                }
+
+                // Voeg hier de code voor het toevoegen van filterdropdowns toe
+                var tableHeaders = document.querySelectorAll('th');
+                tableHeaders.forEach(function(header, index) {
+                    if (index !== 0) { // Overslaan van de eerste kolom ('Project ID')
+                        var filterDropdown = document.createElement('select');
+                        filterDropdown.classList.add('filter-dropdown');
+                        filterDropdown.dataset.columnIndex = index;
+
+                        // Voeg een lege optie toe
+                        var emptyOption = document.createElement('option');
+                        emptyOption.textContent = 'Alle';
+                        emptyOption.value = '';
+                        filterDropdown.appendChild(emptyOption);
+
+                        // Verzamel alle unieke waarden voor deze kolom
+                        var uniqueValues = [];
+                        for (var i = 0; i < rows.length; i++) {
+                            var rowData = rows[i].split(';');
+                            if (rowData.length > index) {
+                                var value = rowData[index];
+                                if (!uniqueValues.includes(value)) {
+                                    uniqueValues.push(value);
+                                }
+                            }
+                        }
+
+                        // Voeg de unieke waarden toe als opties
+                        uniqueValues.forEach(function(value) {
+                            var option = document.createElement('option');
+                            option.textContent = value;
+                            option.value = value;
+                            filterDropdown.appendChild(option);
+                        });
+
+                        // Voeg een eventlistener toe voor het filteren
+                        filterDropdown.addEventListener('change', function() {
+                            var columnIndex = this.dataset.columnIndex;
+                            var filterValue = this.value.toLowerCase();
+                            filterTable(columnIndex, filterValue);
+                        });
+
+                        header.appendChild(filterDropdown);
+                    }
+                });
+            })
+            .catch(error => console.error('Fout bij het ophalen van het CSV-bestand:', error));
+
+        // Functie om het gegevensarray bij te werken op basis van de tabelcellen
+        function updateDataArray() {
+            var rows = tableBody.getElementsByTagName('tr');
+            data = [];
+            for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName('td');
+                var rowData = [];
+                for (var j = 0; j < cells.length; j++) {
+                    rowData.push(cells[j].textContent);
+                }
+                data.push(rowData);
+            }
+        }
+
+        // Voeg functionaliteit toe voor het bijwerken van CSV-bestand
+        document.getElementById('updateButton').addEventListener('click', function() {
+            updateDataArray(); // Werk de gegevens bij voordat u het CSV-bestand bijwerkt
+            updateCSVFile();
+        });
+
+        // Functie om het CSV-bestand bij te werken
+        function updateCSVFile() {
+            var csvContent = data.map(row => row.join(';')).join('\n');
+            var blob = new Blob([csvContent], { type: 'text/csv' });
+
+            // Maak een URL voor het blob-object
+            var url = window.URL.createObjectURL(blob);
+
+            // Maak een link om het CSV-bestand te downloaden
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'dataset.csv';
+
+            // Klik op de link om het CSV-bestand te downloaden
+            a.click();
+
+            // Maak de URL en het blob-object vrij om geheugen te besparen
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Voeg functionaliteit toe voor het bewerken van cellen
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'TD') {
+                var cell = e.target;
+                var input = document.createElement('input');
+                input.type = 'text';
+                input.value = cell.textContent;
+                cell.textContent = '';
+                cell.appendChild(input);
+                input.focus();
+
+                // Luister naar het verlies van focus (blur) van het invoerveld om wijzigingen op te slaan
+                input.addEventListener('blur', function() {
+                    cell.textContent = input.value;
+                    updateDataArray();
+                });
+            }
+        });
+
+        // Functie voor het filteren van de tabel op basis van de geselecteerde optie
+        function filterTable(columnIndex, filterValue) {
+            var rows = tableBody.getElementsByTagName('tr');
+            for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName('td');
+                var cell = cells[columnIndex];
+                if (filterValue === '' || cell.textContent.toLowerCase() === filterValue) {
+                    rows[i].style.display = ''; // Toon de rij als deze overeenkomt
+                } else {
+                    rows[i].style.display = 'none'; // Verberg de rij als deze niet overeenkomt
+                }
+            }
+        }
+    </script>
+
+<h2>Data Overview</h2>
+
+
+<!--Code van Categorie circel diagram(Development, Education, Research) -->
+
+<div id="chart-container"></div>
+
+
+  <script>
+    (async function() {
+      // Laad het CSV-bestand met D3.js
+      const data = await d3.dsv(";", "dataset.csv");
+
+      // Array om de waarden van de kolom "Content.soort" op te slaan
+      const contentSoortValues = [];
+
+      // Loop over de data en sla de waarden van de kolom "Content.soort" op
+      data.forEach(function(d) {
+        contentSoortValues.push(d.Category);
+      });
+
+      // Functie om de frequentie van unieke waarden te tellen
+      function countUniqueValues(arr) {
+        const counts = {};
+        arr.forEach(function(value) {
+          counts[value] = (counts[value] || 0) + 1;
+        });
+        return counts;
+      }
+
+      const counts = countUniqueValues(contentSoortValues);
+
+      // Converteer de frequentieobjecten naar een array van objecten voor D3.js
+      const dataForPieChart = Object.keys(counts).map(function(key) {
+        return {
+          value: counts[key],
+          label: key
+        };
+      });
+
+      // Creëer een cirkeldiagram met D3.js
+      const width = 1000; // Breedte van het diagram
+      const height = 400; // Hoogte van het diagram
+      const radius = Math.min(width, height) / 2; // Straal van de cirkel
+
+      const svg = d3.select("#chart-container")
+      
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", `translate(${width / 2},${height / 2})`);
+
+        
+
+
+        
+
+      const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+      const pie = d3.pie()
+        .value(function(d) { return d.value; });
+
+      const arc = d3.arc()
+        .outerRadius(radius - 10)
+        .innerRadius(0);
+
+      const arcs = svg.selectAll("arc")
+        .data(pie(dataForPieChart))
+        .enter()
+        .append("g")
+        .attr("class", "arc");
+
+      arcs.append("path")
+        .attr("d", arc)
+        .attr("fill", function(d, i) { return color(i); });
+
+        arcs
+        .on("mouseover", function() {
+          d3.select(this).select("path").attr("fill", "gray"); // Kleur feller maken bij hover
+        })
+        .on("mouseout", function() {
+          d3.select(this).select("path").attr("fill", function(d, i) { return color(i); }); // Terug naar normale kleur
+        });
+
+      // Voeg legenda toe
+      const legend = svg.selectAll(".legend")
+        .data(dataForPieChart)
+        .enter()
+        .append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d, i) {
+          return `translate(0,${i * 30})`;
+        });
+
+      legend.append("rect")
+        .attr("x", -400)
+        .attr("width", 18)
+        .attr("height", 18)
+        .style("fill", function(d, i) { return color(i); });
+
+      legend.append("text")
+        .attr("x", -380)
+        .attr("y", 9)
+        .attr("dy", ".35em")
+        .style("text-anchor", "start")
+        .text(function(d) { return `${d.label} (${d.value})`; });
+
+
+
+        arcs
+        .append("path")
+        .attr("d", arc)
+        .attr("fill", function(d, i) { return color(i); });
+
+      arcs
+        .on("mouseover", function() {
+          d3.select(this).select("path").attr("fill", "lightgray"); // Kleur wijzigen bij hover
+        })
+        .on("mouseout", function() {
+          d3.select(this).select("path").attr("fill", function(d, i) { return color(i); }); // Terug naar normale kleur
+        });
+    })();
+  </script>
+
+
+
+<h2>ProjectOverview</h2>
+
+
+<h3 class="categorieText">Categorie </h3>
+<p class="categorieParagraaf">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Magni, a voluptas quaerat, libero quis, doloribus architecto alias sit distinctio nihil repellendus. Nulla ratione temporibus cupiditate, dolores sit quod ea quibusdam.</p>
+
+
+
+<hr>
+
+
+
+
+<!--Code van Education circel diagram(Department A, Department B, Department C) -->
+<div id="chart-containerEducation"></div>
+
+  <script>
+    (async function() {
+      // Laad het CSV-bestand met D3.js
+      const data = await d3.dsv(";", "dataset.csv");
+
+      // Array om de waarden van de kolom "Content.soort" op te slaan
+      const contentSoortValues = [];
+
+      // Loop over de data en sla de waarden van de kolom "Content.soort" op
+      data.forEach(function(d) {
+        contentSoortValues.push(d.Education);
+      });
+
+      // Functie om de frequentie van unieke waarden te tellen
+      function countUniqueValues(arr) {
+        const counts = {};
+        arr.forEach(function(value) {
+          counts[value] = (counts[value] || 0) + 1;
+        });
+        return counts;
+      }
+
+      const counts = countUniqueValues(contentSoortValues);
+
+      // Converteer de frequentieobjecten naar een array van objecten voor D3.js
+      const dataForPieChart = Object.keys(counts).map(function(key) {
+        return {
+          value: counts[key],
+          label: key
+        };
+      });
+
+
+
+
+      // Creëer een cirkeldiagram met D3.js
+      const width = 2500; // Breedte van het diagram
+      const height = 400; // Hoogte van het diagram
+      const radius = Math.min(width, height) / 2; // Straal van de cirkel
+
+      const svg = d3.select("#chart-containerEducation")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", `translate(${width / 2},${height / 2})`);
+
+      const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+      const pie = d3.pie()
+        .value(function(d) { return d.value; });
+
+      const arc = d3.arc()
+        .outerRadius(radius - 10)
+        .innerRadius(0);
+
+      const arcs = svg.selectAll("arc")
+        .data(pie(dataForPieChart))
+        .enter()
+        .append("g")
+        .attr("class", "arc");
+
+      arcs.append("path")
+        .attr("d", arc)
+        .attr("fill", function(d, i) { return color(i); });
+
+        arcs
+        .on("mouseover", function() {
+          d3.select(this).select("path").attr("fill", "gray"); // Kleur feller maken bij hover
+        })
+        .on("mouseout", function() {
+          d3.select(this).select("path").attr("fill", function(d, i) { return color(i); }); // Terug naar normale kleur
+        });
+
+      // Voeg legenda toe
+      const legend = svg.selectAll(".legend")
+        .data(dataForPieChart)
+        .enter()
+        .append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d, i) {
+          return `translate(0,${i * 30})`;
+        });
+
+      legend.append("rect")
+        .attr("x", -400)
+        .attr("width", 18)
+        .attr("height", 18)
+        .style("fill", function(d, i) { return color(i); });
+
+      legend.append("text")
+        .attr("x", -380)
+        .attr("y", 9)
+        .attr("dy", ".35em")
+        .style("text-anchor", "start")
+        .text(function(d) { return `${d.label} (${d.value})`; });
+
+
+
+        arcs
+        .append("path")
+        .attr("d", arc)
+        .attr("fill", function(d, i) { return color(i); });
+
+      arcs
+        .on("mouseover", function() {
+          d3.select(this).select("path").attr("fill", "lightgray"); // Kleur wijzigen bij hover
+        })
+        .on("mouseout", function() {
+          d3.select(this).select("path").attr("fill", function(d, i) { return color(i); }); // Terug naar normale kleur
+        });
+    })();
+  </script>
+
+
+
+
+<hr>
+
+
+
+
+
+<!--Code histogram Lectoraat -->
+
+<div id="chart-containerLectoraat"></div>
+
+  <script>
+    (async function() {
+      // Laad het CSV-bestand met D3.js
+      const data = await d3.dsv(";", "dataset.csv");
+
+      // Array om de waarden van de kolom "Content.soort" op te slaan
+      const contentSoortValues = [];
+
+      // Loop over de data en sla de waarden van de kolom "Content.soort" op
+      data.forEach(function(d) {
+        contentSoortValues.push(d.Lectoraat);
+      });
+
+      // Functie om de frequentie van unieke waarden te tellen
+      function countUniqueValues(arr) {
+        const counts = {};
+        arr.forEach(function(value) {
+          counts[value] = (counts[value] || 0) + 1;
+        });
+        return counts;
+      }
+
+      const counts = countUniqueValues(contentSoortValues);
+
+      // Converteer de frequentieobjecten naar een array van objecten voor D3.js
+      const dataForBarChart = Object.keys(counts).map(function(key) {
+        return {
+          label: key,
+          value: counts[key]
+        };
+      });
+
+      // Creëer een staafdiagram met D3.js
+      const width = 400; // Breedte van het diagram
+      const height = 400; // Hoogte van het diagram
+      const margin = { top: 20, right: 10, bottom: 40, left: 100 }; // Marges
+
+      const svg = d3.select("#chart-containerLectoraat")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      const x = d3.scaleBand()
+        .domain(dataForBarChart.map(d => d.label))
+        .range([margin.left, width - margin.right])
+        .padding(0.1);
+
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(dataForBarChart, d => d.value)])
+        .nice()
+        .range([height - margin.bottom, margin.top]);
+
+      svg.selectAll(".bar")
+        .data(dataForBarChart)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", d => x(d.label))
+        .attr("y", d => y(d.value))
+        .attr("width", x.bandwidth())
+        .attr("height", d => height - margin.bottom - y(d.value));
+
+      // Voeg labels toe aan de assen
+      svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x));
+
+      svg.append("g")
+        .attr("class", "y-axis")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y).ticks(20));
+
+      // Voeg tooltips toe aan de staafdiagrammen
+      const tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+      svg.selectAll(".bar")
+        .on("mouseover", function(d) {
+          d3.select(this).attr("fill", "lightsteelblue"); // Kleur wijzigen bij hover
+          tooltip.transition()
+            .duration(200)
+            .style("opacity", 0.9);
+          tooltip.html(`${d.label}: ${d.value}`)
+            .style("left", (d3.event.pageX + 30) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+        })
+        .on("mouseout", function() {
+          d3.select(this).attr("fill", "steelblue"); // Terug naar normale kleur
+          tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+        });
+
+    })();
+
+</script>
+
+
+
+
+
+<hr>
+
+
+
+<!--Code Projectstatus horizontale histogram -->
+
+<div id="chart-containerprojectstatus"></div>
+
+  <script>
+    (async function() {
+      // Laad het CSV-bestand met D3.js
+      const data = await d3.dsv(";", "dataset.csv");
+
+      // Array om de waarden van de kolom "Content.soort" op te slaan
+      const contentSoortValues = [];
+
+      // Loop over de data en sla de waarden van de kolom "Content.soort" op
+      data.forEach(function(d) {
+        contentSoortValues.push(d.ProjectStatus);
+      });
+
+      // Functie om de frequentie van unieke waarden te tellen
+      function countUniqueValues(arr) {
+        const counts = {};
+        arr.forEach(function(value) {
+          counts[value] = (counts[value] || 0) + 1;
+        });
+        return counts;
+      }
+
+      const counts = countUniqueValues(contentSoortValues);
+
+      // Converteer de frequentieobjecten naar een array van objecten voor D3.js
+      const dataForBarChart = Object.keys(counts).map(function(key) {
+        return {
+          label: key,
+          value: counts[key]
+        };
+      });
+
+      // Creëer een staafdiagram met D3.js
+      const width = 400; // Breedte van het diagram
+      const height = 400; // Hoogte van het diagram
+      const margin = { top: 20, right: 30, bottom: 40, left: 70 }; // Marges
+
+      const svg = d3.select("#chart-containerprojectstatus")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      const x = d3.scaleLinear()
+        .domain([0, d3.max(dataForBarChart, d => d.value)])
+        .nice()
+        .range([margin.left, width - margin.right]);
+
+      const y = d3.scaleBand()
+        .domain(dataForBarChart.map(d => d.label))
+        .range([height - margin.bottom, margin.top])
+        .padding(0.1);
+
+      svg.selectAll(".bar")
+        .data(dataForBarChart)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("y", d => y(d.label))
+        .attr("x", margin.left) // Beginpunt van de staafjes aan de linkerkant
+        .attr("width", d => x(d.value) - margin.left) // Breedte wordt bepaald door de waarde
+        .attr("height", y.bandwidth());
+
+      // Voeg labels toe aan de assen
+      svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x).ticks(10)); // Hier heb ik het aantal getallen op de x-as ingesteld op 10
+
+      svg.append("g")
+        .attr("class", "y-axis")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y));
+
+      // Voeg tooltips toe aan de staafdiagrammen
+      const tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+      svg.selectAll(".bar")
+        .on("mouseover", function(d) {
+          d3.select(this).attr("fill", "lightsteelblue"); // Kleur wijzigen bij hover
+          tooltip.transition()
+            .duration(200)
+            .style("opacity", 0.9);
+          tooltip.html(`${d.label}: ${d.value}`)
+            .style("left", (d3.event.pageX + 10) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+        })
+        .on("mouseout", function() {
+          d3.select(this).attr("fill", "steelblue"); // Terug naar normale kleur
+          tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+        });
+
+    })();
+  </script>
+
+
+
+
+</body>
+</html>
