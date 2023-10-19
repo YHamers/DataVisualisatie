@@ -1,0 +1,25 @@
+/*================MAIN================*/
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+/*================NavBar================*/
+
+/*================Charts================*/
+.chart-container {
+    width: 800px;
+    margin: 20px auto;
+}
+
+/*================Arc================*/
+.arc {
+    transition: fill 0.2s; /* Voeg een overgangseffect toe */
+  }
+
+  .arc:hover {
+    fill: lightgray; /* Kleur veranderen bij hover */
+    cursor: pointer; /* Muisaanwijzer veranderen naar pointer */
+  }

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>dashboard test</title>
+
+         <!-- Add Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <!-- Add jQuery (required for Bootstrap JavaScript plugins) -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <!-- Add Popper.js (required for Bootstrap JavaScript plugins) -->
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+        <!-- Add Bootstrap JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+        <!--JSD3 Library-->
+        <script src="https://d3js.org/d3.v6.min.js"></script>
+        
+        <!-- Custom stylesheet -->
+        <link rel="stylesheet" href="Style\Stylesheet.css">
+
+        <!-- Link Scripts for charts -->
+        <!-- Chart 1: ScatterPlot - Project status -->
+        <script src="Script/Chart1_Scatterplot_PStatus.js"></script>
+        <!-- Chart 2: Circle Diagram - Project Categories -->
+        <script src="Script/Chart2_CircleDiagram_Category.js"></script>
+        
+
+    </head>
+    <body>
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">My Website</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Titel Dashboard -->
+        <div class="container">
+            <h1>Welcome to My Website</h1>
+            <p>This is a simple HTML page with a Bootstrap navbar.</p>
+        </div>
+
+        <!-- Charts for dashboard -->
+        <div>
+            <!-- Chart 1: ScatterPlot - Project status -->
+            <div>
+                <div>
+                    <svg id="scatterplot"></svg>
+                </div>
+                
+                <div id="tooltip" style="position: absolute; padding: 10px; background-color: white; border: 1px solid #ccc; border-radius: 5px; pointer-events: none; display: none;"></div>
+                <!-- Change data in Chart 1 -->
+                <button id="button1">Start Date</button>
+                <button id="button2">End Date</button>
+            </div>
+
+            <!-- Chart 2: Circle Diagram - Project Categories -->
+            <div>
+                <div id="chart2"></div>
+            </div>
+        </div>
+        
+        
+    </body>
+</html>
