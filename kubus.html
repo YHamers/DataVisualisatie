@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>3D Scatter Plot in Plotly with CSV Data</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+    <div id="scatter-plot" style="width: 800px; height: 600px;"></div>
+    <script>
+        async function fetchData() {
+            const data = await d3.dsv(";", "Data/dataset.csv"); // Verander "Data/dataset.csv" naar het juiste pad naar je CSV-bestand
+            const xData = data.map(entry => entry['Start Date']);
+            const yData = data.map(entry => entry['EndDate']);
+            const zData = data.map(entry => entry['ProjectStatus']);
+
+            var scatterData = {
+                x: xData,
+                y: yData,
+                z: zData,
+                mode: 'markers',
+                type: 'scatter3d',
+                marker: { size: 5, color: zData }
+            };
+
+            var layout = {
+                width: 800, // Aanpassen naar de gewenste breedte
+                height: 600, // Aanpassen naar de gewenste hoogte
+                scene: {
+                    xaxis: { title: 'Start Date' },
+                    yaxis: { title: 'End Date' },
+                    zaxis: { title: 'Project Status' },
+                }
+            };
+
+            Plotly.newPlot('scatter-plot', [scatterData], layout);
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
