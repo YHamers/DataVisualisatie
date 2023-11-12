@@ -54,16 +54,58 @@
         .scatter-plot .svg-container path {
     stroke: white !important;
   }
+
+        /* Voeg hier je CSS-styling toe */
+        
+        .y-axis text {
+            font-size: 16px; /* Pas de gewenste lettergrootte aan */
+            fill: white;
+        }
+        p{
+            color: white;
+        }
+
+        .categorytitle{
+            margin-right: 5px;
+            text-align: center;
+        }
+    
       </style>
       
 </head>
 <body>
 
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Menu</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="test.html">Dashboard <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="Dashboard.html">Dataset</a>
+                </li>
+                
+            </ul>
+        </div>
+    </nav>
+
     
 
 <div class="container-fluid">
     <div class="welkom">
-        <h1>Dashboard DI-LAB</h1>
+        <h1 id="current-date">Dashboard DI-LAB</h1>
+
+        <script>
+            // JavaScript om de huidige datum op te halen
+            const currentDateElement = document.getElementById("current-date");
+            const currentDate = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            currentDateElement.innerText = "Dashboard DI-LAB: " + currentDate.toLocaleDateString(undefined, options);
+        </script>
         <img class="zuydlogo" src="https://upload.wikimedia.org/wikipedia/commons/4/45/LogoZUYD.png">
        
     </div>
@@ -84,8 +126,9 @@
           
         </div>
         <div class="col-md-3">
-            <div class="bg-secondary text-white p-3">
+            <div class="text-white p-3">
                 <!-- Chart 2: Circle Diagram - Project Categories -->
+                <p class="categorytitle">Category overview</p>
             <div class="chartcirceldiagram">
                 <div id="chart2"></div>
             </div>
@@ -100,19 +143,24 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4">
-                <div class="CircelDepartment" id="chart-containerEducation"></div>
+                <div class="CircelDepartment" id="chart-containerEducation">
+                    <p>Department overview</p>
+                </div>
             </div>
             <div class="col-md-4">
-                
-                <div class="Scatterplot3D" id="scatter-plot"></div>
+                <div class="Scatterplot3D" id="scatter-plot">
+                    
+                </div>
             </div>
             <div class="col-md-4">
-                <div id="chart-containerLectoraat"></div>
-                
-    
+                <div id="chart-containerLectoraat">
+                    <p>Lectoraat overview.</p>
+                </div>
             </div>
         </div>
     </div>
+    
+    
 
     <div class="container">
     <div class="row">

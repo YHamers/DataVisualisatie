@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Data Display</title>
+    <style>
+        /* Voeg hier je CSS-styling voor de tabel en de cellen toe */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #007AFF;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007AFF;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 12px 16px;
+            text-align: left;
+            color: #333;
+        }
+
+        th {
+            background-color: #007AFF;
+            color: #fff;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .filter-dropdown {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+}
+
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .chart-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .chart-description {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .legend {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Project ID</th>
+                <th>Project Title</th>
+                <th>Client</th>
+                <th>Stakeholders</th>
+                <th>Category</th>
+                <th>Start Date</th>
+                <th>Lectoraat</th>
+                <th>Researcher</th>
+                <th>Tags</th>
+                <th>Contact info client</th>
+                <th>Contact info lectoraat</th>
+                <th>Project Goal</th>
+                <th>Results</th>
+                <th>Start Date</th>
+                <th>Intake Date</th>
+                <th>Review Date</th>
+                <th>End Date</th>
+                <th>Submit Date</th>
+                <th class="status-cell">Project Status</th>
+                <th>Project Duration</th>
+                <th>Dependencies</th>
+            </tr>
+        </thead>
+        <tbody id="data-body">
+            <!-- Hier wordt de inhoud van de tabel gegenereerd met JavaScript -->
+        </tbody>
+    </table>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // Async functie om het CSV-bestand te openen en de data in te lezen
+        async function fetchData() {
+            try {
+                const data = await d3.dsv(";", "Data/dataset.csv");
+
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+
+                const projectTitle = urlParams.get("projectTitle");
+                const client = urlParams.get("client");
+                const category = urlParams.get("category");
+
+                // Filter de data op basis van de URL-parameters
+                const filteredData = data.filter(row => {
+                    return (
+                        row["Project Title"] === projectTitle &&
+                        row["Client"] === client &&
+                        row["Category"] === category
+                    );
+                });
+
+                // Vul de tabel met de overeenkomende gegevens
+                const dataBody = document.getElementById("data-body");
+
+                filteredData.forEach(row => {
+                    const rowElement = document.createElement("tr");
+                    for (const key in row) {
+                        const cellElement = document.createElement("td");
+                        cellElement.textContent = row[key];
+                        rowElement.appendChild(cellElement);
+                    }
+                    dataBody.appendChild(rowElement);
+                });
+            } catch (error) {
+                console.error("Fout bij het openen van het CSV-bestand:", error);
+            }
+        }
+
+        // Roep de fetchData functie aan om het CSV-bestand te verwerken en de tabel in te vullen
+        fetchData();
+    </script>
+</body>
+</html>
